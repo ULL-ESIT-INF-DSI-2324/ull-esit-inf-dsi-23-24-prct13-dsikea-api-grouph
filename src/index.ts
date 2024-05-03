@@ -4,6 +4,7 @@ import { defaultRouter } from './routers/default.js';
 import { customerRouter } from './routers/customer_router.js';
 
 export const app = express();
+app.disable('x-powered-by');
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
