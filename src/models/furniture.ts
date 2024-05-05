@@ -4,7 +4,7 @@ export interface FurnitureDocumentInterface extends Document {
     name: string,
     description: string,
     material: string,
-    color: 'red' | 'blue' | 'green' | 'yellow' | 'black' | 'white' | 'brown',
+    color: 'rojo' | 'azul' | 'verde' | 'amarillo' | 'negro' | 'blanco' | 'marron',
     price: number,
     type: 'Silla' | 'Mesa' | 'Armario',
     stock: number,
@@ -30,7 +30,7 @@ export const furnitureSchema = new Schema<FurnitureDocumentInterface>({
     color: {
         type: String,
         required: true,
-        enum: ['red', 'blue', 'green', 'yellow', 'black', 'white', 'brown'],
+        enum: ['rojo', 'azul', 'verde', 'amarillo', 'negro', 'blanco', 'marron'],
     },
     price: {
         type: Number,
