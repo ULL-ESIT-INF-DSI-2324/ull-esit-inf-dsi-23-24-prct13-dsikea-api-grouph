@@ -1,7 +1,7 @@
 import { Document, Schema, model } from 'mongoose';
 import validator from 'validator';
 
-export interface CoustomerDocumentInterface extends Document {
+export interface CustomerDocumentInterface extends Document {
     name: string,
     nif: string,
     email: string,
@@ -9,7 +9,7 @@ export interface CoustomerDocumentInterface extends Document {
     address: string,
 }
 
-const customerSchema = new Schema<CoustomerDocumentInterface>({
+const customerSchema = new Schema<CustomerDocumentInterface>({
     name: {
       type: String,
       required: true,
@@ -56,5 +56,5 @@ const customerSchema = new Schema<CoustomerDocumentInterface>({
     }
 });
 
-export const Customer = model<CoustomerDocumentInterface>('Customer', customerSchema);
+export const Customer = model<CustomerDocumentInterface>('Customer', customerSchema);
 
