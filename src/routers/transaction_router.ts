@@ -23,6 +23,8 @@ export const transactionRouter = express.Router();
 //     ]
 // }
 
+//http://localhost:3000/transactions/by-date?startDate=2024-05-06&endDate=2024-05-08&type=SALE
+
 /**
  * Find a customer by NIF
  */
@@ -99,6 +101,85 @@ transactionRouter.post('/transactions', async (req, res) => {
         return res.status(500).send({ message: error.message });
     }
 });
+
+
+transactionRouter.get('/transactions', async (req, res) => {
+    const { customerNIF, providerCIF } = req.query;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any> = {};
+    try {
+        // Check if a valid customer or provider identifier was provided
+        if (customerNIF) {
+            const customerExists = await Customer.exists({ nif: customerNIF });
+            if (!customerExists) {
+                return res.status(404).send({ message: `No customer found with NIF: ${customerNIF}` });
+            }
+        }
+
+        if (providerCIF) {
+            const providerExists = await Provider.exists({ cif: providerCIF });
+            if (!providerExists) {
+                return res.status(404).send({ message: `No provider found with CIF: ${providerCIF}` });
+            }
+        }
+
+        if (customerNIF) {
+            filter.customerNIF = customerNIF;
+        }
+        if (providerCIF) {
+            filter.providerCIF = providerCIF;
+        }
+
+        const transactions = await Transaction.find(filter);
+        if (transactions.length === 0) {
+            return res.status(404).send({ message: 'No transactions found for the provided identifiers.' });
+        }
+        return res.status(200).send(transactions);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+
+transactionRouter.get('/transactions/by-date', async (req, res) => {
+    const { startDate, endDate, type } = req.query;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any> = {};
+
+    if (type) {
+        filter.type = type;
+    }
+    if(startDate && endDate) {
+        filter.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
+    } else if (startDate || endDate) {
+        return res.status(400).send({ error: 'Both start date and end date must be provided' });
+    }
+
+    try {
+        const transactions = await Transaction.find(filter);
+        if (transactions.length === 0) {
+            return res.status(404).send({ error: 'No transactions found' });
+        }
+        return res.status(200).send(transactions);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+
+transactionRouter.get('/transactions/:id', async (req, res) => {
+    try {
+        const transaction = await Transaction.findById(req.params.id);
+        if (!transaction) {
+            return res.status(404).send({ 
+                error: 'Transaction not found' 
+            });
+        }
+        return res.send(transaction);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+
+     
 
 
 
