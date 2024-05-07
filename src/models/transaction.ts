@@ -6,7 +6,7 @@ export interface TransactionDocumentInterface extends Document {
     customerNIF?: string,
     providerCIF?: string,
     type: 'SALE' | 'PURCHASE',
-    furnitureList: { furnitureID: FurnitureDocumentInterface | number; quantity: number} [],
+    furnitureList: { furnitureId: FurnitureDocumentInterface | number; quantity: number} [],
     totalPrice: number,
     date: Date,
 }

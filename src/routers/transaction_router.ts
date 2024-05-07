@@ -25,6 +25,20 @@ export const transactionRouter = express.Router();
 
 //http://localhost:3000/transactions/by-date?startDate=2024-05-06&endDate=2024-05-08&type=SALE
 
+//Para patch el body es asi (dependiendo de los muebles obvio):
+// {
+//     "furnitureList": [
+//       {
+//         "furnitureId": "6637c5f5664f4a696e58f87e",
+//         "quantity": 2
+//       },
+//       {
+//         "furnitureId": "6637c607664f4a696e58f880",
+//         "quantity": 6
+//       }
+//     ]
+//   }
+
 /**
  * Find a customer by NIF
  */
@@ -108,7 +122,6 @@ transactionRouter.get('/transactions', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: Record<string, any> = {};
     try {
-        // Check if a valid customer or provider identifier was provided
         if (customerNIF) {
             const customerExists = await Customer.exists({ nif: customerNIF });
             if (!customerExists) {
@@ -140,46 +153,83 @@ transactionRouter.get('/transactions', async (req, res) => {
     }
 });
 
-transactionRouter.get('/transactions/by-date', async (req, res) => {
-    const { startDate, endDate, type } = req.query;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const filter: Record<string, any> = {};
-
-    if (type) {
-        filter.type = type;
-    }
-    if(startDate && endDate) {
-        filter.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
-    } else if (startDate || endDate) {
-        return res.status(400).send({ error: 'Both start date and end date must be provided' });
-    }
+transactionRouter.patch('/transactions/:id', async (req, res) => {
+    const { id } = req.params;
+    const { furnitureList } = req.body;
 
     try {
-        const transactions = await Transaction.find(filter);
-        if (transactions.length === 0) {
-            return res.status(404).send({ error: 'No transactions found' });
-        }
-        return res.status(200).send(transactions);
-    } catch (error) {
-        return res.status(500).send({ message: error.message });
-    }
-});
-
-transactionRouter.get('/transactions/:id', async (req, res) => {
-    try {
-        const transaction = await Transaction.findById(req.params.id);
+        const transaction = await Transaction.findById(id);
         if (!transaction) {
-            return res.status(404).send({ 
-                error: 'Transaction not found' 
-            });
+            return res.status(404).send('Transaction not found.');
         }
+
+        let newTotalPrice = 0;
+
+        if (transaction.furnitureList && transaction.furnitureList.length > 0) {
+            await Promise.all(transaction.furnitureList.map(async (item) => {
+                const furniture = await Furniture.findById(item.furnitureId);
+                if (furniture) {
+                    const stockAdjustment = transaction.type === 'PURCHASE' ? -item.quantity : item.quantity;
+                    furniture.stock += stockAdjustment;
+                    await furniture.save();
+                }
+            }));
+        }
+
+        if (furnitureList && furnitureList.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await Promise.all(furnitureList.map(async (newItem: { furnitureId: any; quantity: number; }) => {
+                const furniture = await Furniture.findById(newItem.furnitureId);
+                if (furniture) {
+                    const stockAdjustment = transaction.type === 'PURCHASE' ? newItem.quantity : -newItem.quantity;
+                    furniture.stock += stockAdjustment;
+                    await furniture.save();
+                    newTotalPrice += newItem.quantity * furniture.price;
+                } else {
+                    throw new Error(`Furniture not found for ID: ${newItem.furnitureId}`);
+                }
+            }));
+        }
+
+        transaction.furnitureList = furnitureList;
+        transaction.totalPrice = newTotalPrice; 
+        await transaction.save();
+
         return res.send(transaction);
     } catch (error) {
         return res.status(500).send({ message: error.message });
     }
 });
 
-     
+transactionRouter.delete('/transactions/:id', async (req, res) => {
+    try {
+      const transaction = await Transaction.findById(req.params.id);
+      if (!transaction) {
+        return res.status(404).send('Transaction not found');
+      }
+  
+      for (const item of transaction.furnitureList) {
+        const furniture = await Furniture.findById(item.furnitureId);
+        if (!furniture) {
+          return res.status(404).send({ message: 'Furniture not found for ID: ' + item.furnitureId });
+        }
 
+        const newStockLevel = transaction.type === 'PURCHASE' ? furniture.stock - item.quantity : furniture.stock + item.quantity;
+  
+        if (newStockLevel < 0) {
+          return res.status(400).send({
+            message: `Insufficient stock to reverse the transaction for furniture ID: ${item.furnitureId}. Available stock: ${furniture.stock}, trying to subtract: ${item.quantity}`
+          });
+        }
+  
+        furniture.stock = newStockLevel;
+        await furniture.save();
+      }
 
-
+      await Transaction.findByIdAndDelete(req.params.id);
+      return res.status(200).send({ message: 'Transaction deleted and stock adjusted successfully.' });
+    } catch (error) {
+        return res.status(500).send({ message: 'Error deleting transaction: ' + error.message });
+    }
+  });
+  
