@@ -231,5 +231,4 @@ transactionRouter.delete('/transactions/:id', async (req, res) => {
     } catch (error) {
         return res.status(500).send({ message: 'Error deleting transaction: ' + error.message });
     }
-  });
-  
+});
