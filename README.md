@@ -26,3 +26,15 @@
 
 ## Introducción y objetivos
 
+## Desarrollo
+
+## Conclusiones
+
+## Bibliografía
+
+- [ChatGPT](https://chat.openai.com/)
+- [Promise.all](https://www.freecodecamp.org/espanol/news/todo-lo-que-necesitas-saber-sobre-promise-all/)
+- [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database)
+- [Mongoose](https://www.npmjs.com/package/mongoose)
+- [Render](https://render.com/)
+- [Apuntes de la asignatura](https://ull-esit-inf-dsi-2324.github.io/nodejs-theory/)
