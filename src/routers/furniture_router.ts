@@ -142,7 +142,7 @@ furnitureRouter.delete('/furnitures', async (req, res) => {
         }
         return res.send({
             message: `${deleted.deletedCount} furniture(s) deleted`
-        });
+        }).status(200);
     } catch (error) {
         return res.status(500).send(error);
     }
