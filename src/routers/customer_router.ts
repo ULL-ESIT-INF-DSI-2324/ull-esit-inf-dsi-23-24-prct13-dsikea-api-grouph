@@ -1,6 +1,6 @@
 import express from 'express';
 import { Customer } from '../models/customer.js';
-//import { Transaction } from '../models/transaction.js';
+
 
 // {
 //     "name": "Francisco Felipe Martin",
