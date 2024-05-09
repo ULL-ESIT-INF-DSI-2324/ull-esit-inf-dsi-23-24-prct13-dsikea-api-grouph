@@ -1,6 +1,10 @@
 import { Document, Schema, model } from 'mongoose';
 import validator from 'validator';
 
+/**
+ * Represents the structure of a customer document object with type enforcement.
+ * @interface
+ */
 export interface CustomerDocumentInterface extends Document {
     name: string,
     nif: string,
@@ -9,6 +13,9 @@ export interface CustomerDocumentInterface extends Document {
     address: string,
 }
 
+/**
+ * Schema definition for the Customer model, enforcing data types and validation rules.
+ */
 const customerSchema = new Schema<CustomerDocumentInterface>({
     name: {
       type: String,
@@ -56,5 +63,8 @@ const customerSchema = new Schema<CustomerDocumentInterface>({
     }
 });
 
+/**
+ * Model creation for `Customer`, based on the defined schema.
+ */
 export const Customer = model<CustomerDocumentInterface>('Customer', customerSchema);
 

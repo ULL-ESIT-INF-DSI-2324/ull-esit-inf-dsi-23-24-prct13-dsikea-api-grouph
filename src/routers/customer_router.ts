@@ -13,8 +13,11 @@ import { Customer } from '../models/customer.js';
 export const customerRouter = express.Router();
 
 /**
- *  Create a new customer
-*/
+ * Route to create a new customer.
+ * @param {express.Request} req - The request object, containing the body with the customer details.
+ * @param {express.Response} res - The response object used to send back the created customer or an error message.
+ * @returns Sends a 201 status and the created customer data or a 500 status with an error message.
+ */
 customerRouter.post('/customers', async (req, res) => {
     try {
         const customer = new Customer(req.body);
@@ -25,6 +28,12 @@ customerRouter.post('/customers', async (req, res) => {
     }
 });
 
+/**
+ * Route to update a customer by NIF using query parameters.
+ * @param {express.Request} req - The request object, containing the body with the update data and the NIF in the query.
+ * @param {express.Response} res - The response object used to send back the updated customer or an error message.
+ * @returns Sends the updated customer data, or an error message with status 400 if validation fails or 404 if the customer is not found and 500 if an error occurs.
+ */
 customerRouter.patch('/customers', async (req, res) => {
     if(!req.query.nif) {
         return res.status(400).send({
@@ -55,6 +64,12 @@ customerRouter.patch('/customers', async (req, res) => {
     }
 });
 
+/**
+ * Route to retrieve a customer by NIF using query parameters.
+ * @param {express.Request} req - The request object, containing the NIF in the query.
+ * @param {express.Response} res - The response object used to send back the customer data or an error message.
+ * @returns Sends the customer data, or an error message with status 400 if NIF is missing or 404 if no customer is found and 500 if an error occurs.
+ */
 customerRouter.patch('/customers/:id', async (req, res) => {
     const allowedUpdates = ['name', 'email', 'mobilePhone', 'address'];
     const actualUpdates = Object.keys(req.body);
@@ -79,6 +94,12 @@ customerRouter.patch('/customers/:id', async (req, res) => {
     }
 });
 
+/**
+ * Route to retrieve a customer by NIF using query parameters.
+ * @param {express.Request} req - The request object, containing the NIF in the query.
+ * @param {express.Response} res - The response object used to send back the customer data or an error message.
+ * @returns Sends the customer data, or an error message with status 400 if NIF is missing or 404 if no customer is found and 500 if an error occurs.
+ */
 customerRouter.get('/customers', async (req, res) => {
     if(!req.query.nif) {
         return res.status(400).send({
@@ -99,6 +120,12 @@ customerRouter.get('/customers', async (req, res) => {
     }
 });
 
+/**
+ * Route to retrieve a customer by ID.
+ * @param {express.Request} req - The request object, containing the customer ID.
+ * @param {express.Response} res - The response object used to send back the customer data or an error message.
+ * @returns Sends the customer data, or an error message with status 404 if no customer is found, and 500 if an error occurs.
+ */
 customerRouter.get('/customers/:id', async (req, res) => {
     try {
         const customer = await Customer.findById(req.params.id);
@@ -113,6 +140,12 @@ customerRouter.get('/customers/:id', async (req, res) => {
     }
 });
 
+/**
+ * Route to delete a customer by NIF using query parameters.
+ * @param {express.Request} req - The request object, containing the NIF in the query.
+ * @param {express.Response} res - The response object used to send back the deleted customer data or an error message.
+ * @returns Sends the deleted customer data, or an error message with status 400 if NIF is missing or 404 if no customer is found, and 500 if an error occurs.
+ */
 customerRouter.delete('/customers', async (req, res) => {
     if(!req.query.nif) {
         return res.status(400).send({
@@ -133,6 +166,12 @@ customerRouter.delete('/customers', async (req, res) => {
     }
 });
 
+/**
+ * Route to delete a customer by ID.
+ * @param {express.Request} req - The request object, containing the customer ID.
+ * @param {express.Response} res - The response object used to send back the deleted customer data or an error message.
+ * @returns Sends the deleted customer data, or an error message with status 404 if no customer is found, and 500 if an error occurs.
+ */
 customerRouter.delete('/customers/:id', async (req, res) => {
     try {
         const customer = await Customer.findByIdAndDelete(req.params.id);

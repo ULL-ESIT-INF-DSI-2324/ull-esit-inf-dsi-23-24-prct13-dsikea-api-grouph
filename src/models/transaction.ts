@@ -2,6 +2,11 @@ import { Document, Schema, Types, model } from 'mongoose';
 //import validator from 'validator';
 import { FurnitureDocumentInterface } from './furniture.js';
 
+/**
+ * Interface to represent the structure of a transaction document with type enforcement.
+ * Extends the base `Document` to include Mongoose document properties.
+ * @interface
+ */
 export interface TransactionDocumentInterface extends Document {
     customerNIF?: string,
     providerCIF?: string,
@@ -11,6 +16,9 @@ export interface TransactionDocumentInterface extends Document {
     date: Date,
 }
 
+/**
+ * Mongoose schema definition for the Transaction model, enforcing data types and validation rules
+ */
 const transactionSchema = new Schema<TransactionDocumentInterface>({
     customerNIF: {
       type: String,
@@ -81,4 +89,7 @@ const transactionSchema = new Schema<TransactionDocumentInterface>({
 },  { timestamps: false },
 );
 
+/**
+ * Represents a Transaction model object with the TransactionDocumentInterface structure
+ */
 export const Transaction = model<TransactionDocumentInterface>('Transaction', transactionSchema);

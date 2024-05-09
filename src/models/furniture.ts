@@ -1,5 +1,9 @@
 import { Document, Schema, model } from 'mongoose';
 
+/**
+ * Represents the structure of a furniture document object with type enforcement.
+ * @interface
+ */
 export interface FurnitureDocumentInterface extends Document {
     name: string,
     description: string,
@@ -10,6 +14,9 @@ export interface FurnitureDocumentInterface extends Document {
     stock: number,
 }
 
+/**
+ * Mongoose schema definition for the Furniture model, enforcing data types and validation rules.
+ */
 export const furnitureSchema = new Schema<FurnitureDocumentInterface>({
     name: {
       type: String,
@@ -57,4 +64,8 @@ export const furnitureSchema = new Schema<FurnitureDocumentInterface>({
     }
 });
 
+/**
+ * Model creation for `Furniture`, based on the defined schema.
+ * This model will be used to interact with the 'furniture' collection in the database.
+ */
 export const Furniture = model<FurnitureDocumentInterface>('Furniture', furnitureSchema);

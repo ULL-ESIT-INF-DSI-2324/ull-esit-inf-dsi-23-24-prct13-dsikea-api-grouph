@@ -12,8 +12,11 @@ export const providerRouter = express.Router();
 // }
 
 /**
- *  Create a new provider
-*/
+ * Creates a new provider and stores it in the database.
+ * @param {express.Request} req - The request object containing the provider details in the body.
+ * @param {express.Response} res - The response object used to send back the created provider or an error message.
+ * @returns Sends a 201 status and the created provider data or a 500 status with an error message if an error occurs.
+ */
 providerRouter.post('/providers', async (req, res) => {
     try {
         const provider = new Provider(req.body);
@@ -24,6 +27,12 @@ providerRouter.post('/providers', async (req, res) => {
     }
 });
 
+/**
+ * Updates a provider by CIF using query parameters.
+ * @param {express.Request} req - The request object containing the update data and the CIF in the query.
+ * @param {express.Response} res - The response object used to send back the updated provider or an error message.
+ * @returns Sends the updated provider data, or an error message with status 400 if validation fails or 404 if the provider is not found and 500 if an error occurs.
+ */
 providerRouter.patch('/providers', async (req, res) => {
     if(!req.query.cif) {
         return res.status(400).send({
@@ -54,6 +63,12 @@ providerRouter.patch('/providers', async (req, res) => {
     }
 });
 
+/**
+ * Updates a provider by ID.
+ * @param {express.Request} req - The request object containing the update data and the provider ID.
+ * @param {express.Response} res - The response object used to send back the updated provider or an error message.
+ * @returns Sends the updated provider data, or an error message with status 400 if validation fails or 404 if the provider is not found and 500 if an error occurs.
+ */
 providerRouter.patch('/providers/:id', async (req, res) => {
     const allowedUpdates = ['name', 'email', 'mobilePhone', 'address'];
     const actualUpdates = Object.keys(req.body);
@@ -78,6 +93,12 @@ providerRouter.patch('/providers/:id', async (req, res) => {
     }
 });
 
+/**
+ * Retrieves a provider by CIF using query parameters.
+ * @param {express.Request} req - The request object containing the CIF in the query.
+ * @param {express.Response} res - The response object used to send back the provider data or an error message.
+ * @returns Sends the provider data, or an error message with status 400 if CIF is not provided or 404 if the provider is not found and 500 if an error occurs.
+ */
 providerRouter.get('/providers', async (req, res) => {
     if(!req.query.cif) {
         return res.status(400).send({
@@ -98,6 +119,12 @@ providerRouter.get('/providers', async (req, res) => {
     }
 });
 
+/**
+ * Retrieves a provider by ID.
+ * @param {express.Request} req - The request object containing the provider ID.
+ * @param {express.Response} res - The response object used to send back the provider data or an error message.
+ * @returns Sends the provider data, or an error message with status 404 if the provider is not found and 500 if an error occurs.
+ */
 providerRouter.get('/providers/:id', async (req, res) => {
     try {
         const provider = await Provider.findById(req.params.id);
@@ -112,6 +139,12 @@ providerRouter.get('/providers/:id', async (req, res) => {
     }
 });
 
+/**
+ * Deletes a provider by CIF using query parameters.
+ * @param {express.Request} req - The request object containing the CIF in the query.
+ * @param {express.Response} res - The response object used to send back the deleted provider or an error message.
+ * @returns Sends the deleted provider data, or an error message with status 400 if CIF is not provided or 404 if the provider is not found and 500 if an error occurs.
+ */
 providerRouter.delete('/providers', async (req, res) => {
     if(!req.query.cif) {
         return res.status(400).send({
@@ -132,6 +165,12 @@ providerRouter.delete('/providers', async (req, res) => {
     }
 });
 
+/**
+ * Deletes a provider by ID.
+ * @param {express.Request} req - The request object containing the provider ID.
+ * @param {express.Response} res - The response object used to send back the deleted provider or an error message.
+ * @returns Sends the deleted provider data, or an error message with status 404 if the provider is not found and 500 if an error occurs.
+ */
 providerRouter.delete('/providers/:id', async (req, res) => {
     try {
         const provider = await Provider.findByIdAndDelete(req.params.id);

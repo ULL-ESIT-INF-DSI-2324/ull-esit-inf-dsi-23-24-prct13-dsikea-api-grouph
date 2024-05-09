@@ -40,19 +40,29 @@ export const transactionRouter = express.Router();
 //   }
 
 /**
- * Find a customer by NIF
+ * Retrieves a customer from the database based on their NIF.
+ * @param {string} nif - The National Identification Number of the customer to be retrieved.
+ * @returns {Promise<CustomerDocumentInterface | null>} A promise that resolves with the customer document if found, otherwise null.
  */
 async function findCustomer(nif: string): Promise<CustomerDocumentInterface | null> {
     return Customer.findOne({ nif: nif }).exec();
 }
 
 /**
- * Find a provider by CIF
+ * Retrieves a provider from the database based on their CIF.
+ * @param {string} cif - The Corporate Identification Number of the provider to be retrieved.
+ * @returns {Promise<ProviderDocumentInterface | null>} A promise that resolves with the provider document if found, otherwise null.
  */
 async function findProvider(cif: string): Promise<ProviderDocumentInterface | null> {
     return Provider.findOne({ cif: cif }).exec();
 }
 
+/**
+ * Route to create a new transaction.
+ * @param {express.Request} req - The request object, containing the transaction details in the request body.
+ * @param {express.Response} res - The response object used to send back the created transaction or an error message.
+ * @returns Sends a 201 status and the created transaction data or a 500 status with an error message.
+ */
 transactionRouter.post('/transactions', async (req, res) => {
     const { type, customerNIF, providerCIF, furnitureList } = req.body;
 
@@ -116,7 +126,12 @@ transactionRouter.post('/transactions', async (req, res) => {
     }
 });
 
-
+/**
+ * Route to retrieve all transactions.
+ * @param {express.Request} req - The request object, containing query parameters to filter the transactions.
+ * @param {express.Response} res - The response object used to send back the transactions or an error message.
+ * @returns Sends the transactions that match the query parameters, or an error message with status 500 if an error occurs.
+ */
 transactionRouter.get('/transactions', async (req, res) => {
     const { customerNIF, providerCIF } = req.query;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -153,6 +168,12 @@ transactionRouter.get('/transactions', async (req, res) => {
     }
 });
 
+/**
+ * Route to retrieve a transaction by ID.
+ * @param {express.Request} req - The request object, containing the ID in the params.
+ * @param {express.Response} res - The response object used to send back the transaction or an error message.
+ * @returns Sends the transaction, or an error message with status 404 if the transaction is not found and 500 if an error occurs.
+ */
 transactionRouter.patch('/transactions/:id', async (req, res) => {
     const { id } = req.params;
     const { furnitureList } = req.body;
@@ -201,6 +222,12 @@ transactionRouter.patch('/transactions/:id', async (req, res) => {
     }
 });
 
+/**
+ * Route to retrieve a transaction by ID.
+ * @param {express.Request} req - The request object, containing the ID in the params.
+ * @param {express.Response} res - The response object used to send back the transaction or an error message.
+ * @returns Sends the transaction, or an error message with status 404 if the transaction is not found and 500 if an error occurs.
+ */
 transactionRouter.delete('/transactions/:id', async (req, res) => {
     try {
       const transaction = await Transaction.findById(req.params.id);

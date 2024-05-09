@@ -14,8 +14,11 @@ export const furnitureRouter = express.Router();
 // }
 
 /**
- *  Create a new furniture
-*/
+ * Route to create a new furniture item.
+ * @param {express.Request} req - The request object, containing the furniture details en el cuerpo de la solicitud.
+ * @param {express.Response} res - The response object used to send back the created furniture item or an error message.
+ * @returns Sends a 201 status and the created furniture data or un 500 status con un mensaje de error.
+ */
 furnitureRouter.post('/furnitures', async (req, res) => {
     try {
         const furniture = new Furniture(req.body);
@@ -26,6 +29,12 @@ furnitureRouter.post('/furnitures', async (req, res) => {
     }
 });
 
+/**
+ * Route to update multiple furniture items based on query parameters.
+ * @param {express.Request} req - The request object, containing query parameters para filtrar los items que se deben actualizar.
+ * @param {express.Response} res - The response object used to send back the result or an error message.
+ * @returns If successful, returns the count of updated items; otherwise, returns an error message.
+ */
 furnitureRouter.patch('/furnitures', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: Record<string, any>  = {};
@@ -60,6 +69,12 @@ furnitureRouter.patch('/furnitures', async (req, res) => {
     }
 });
 
+/**
+ * Route to update a furniture item by ID.
+ * @param {express.Request} req - The request object, containing the update data and the ID in the params.
+ * @param {express.Response} res - The response object used to send back the updated furniture item or an error message.
+ * @returns Sends the updated furniture data, or an error message with status 400 if validation fails or 404 if the furniture item is not found and 500 if an error occurs.
+ */
 furnitureRouter.patch('/furnitures/:id', async (req, res) => {
     const allowedUpdates = ['name', 'description', 'material', 'color', 'price', 'type', 'stock'];
     const actualUpdates = Object.keys(req.body);
@@ -84,6 +99,12 @@ furnitureRouter.patch('/furnitures/:id', async (req, res) => {
     }
 });
 
+/**
+ * Route to retrieve all furniture items.
+ * @param {express.Request} req - The request object, containing query parameters to filter the items.
+ * @param {express.Response} res - The response object used to send back the furniture items or an error message.
+ * @returns Sends the furniture items that match the query parameters, or an error message with status 500 if an error occurs.
+ */
 furnitureRouter.get('/furnitures', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: Record<string, any>  = {};
@@ -106,6 +127,12 @@ furnitureRouter.get('/furnitures', async (req, res) => {
     }
 });
 
+/**
+ * Route to retrieve a furniture item by ID.
+ * @param {express.Request} req - The request object, containing the ID in the params.
+ * @param {express.Response} res - The response object used to send back the furniture item or an error message.
+ * @returns Sends the furniture item, or an error message with status 404 if the furniture item is not found and 500 if an error occurs.
+ */
 furnitureRouter.get('/furnitures/:id', async (req, res) => {
     try {
         const furniture = await Furniture.findById(req.params.id);
@@ -120,6 +147,12 @@ furnitureRouter.get('/furnitures/:id', async (req, res) => {
     }
 });
 
+/**
+ * Route to delete multiple furniture items based on query parameters.
+ * @param {express.Request} req - The request object, containing query parameters to filter the items that should be deleted.
+ * @param {express.Response} res - The response object used to send back the result or an error message.
+ * @returns If successful, returns the count of deleted items; otherwise, returns an error message.
+ */
 furnitureRouter.delete('/furnitures', async (req, res) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const filter: Record<string, any>  = {};
@@ -148,6 +181,12 @@ furnitureRouter.delete('/furnitures', async (req, res) => {
     }
 });
 
+/**
+ * Route to delete a furniture item by ID.
+ * @param {express.Request} req - The request object, containing the ID in the params.
+ * @param {express.Response} res - The response object used to send back the deleted furniture item or an error message.
+ * @returns Sends the deleted furniture item, or an error message with status 404 if the furniture item is not found and 500 if an error occurs.
+ */
 furnitureRouter.delete('/furnitures/:id', async (req, res) => {
     try {
         const furniture = await Furniture.findByIdAndDelete(req.params.id);

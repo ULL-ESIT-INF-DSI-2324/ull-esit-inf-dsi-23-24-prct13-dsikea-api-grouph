@@ -1,6 +1,10 @@
 import { Document, Schema, model } from 'mongoose';
 import validator from 'validator';
 
+/**
+ * Represents the structure of a provider document object with type enforcement.
+ * @interface
+ */
 export interface ProviderDocumentInterface extends Document {
     name: string,
     cif: string,
@@ -9,6 +13,9 @@ export interface ProviderDocumentInterface extends Document {
     address: string,
 }
 
+/**
+ * Schema definition for the Provider model, enforcing data types and validation rules.
+ */
 const providerSchema = new Schema<ProviderDocumentInterface>({
     name: {
       type: String,
@@ -56,4 +63,7 @@ const providerSchema = new Schema<ProviderDocumentInterface>({
     }
 });
 
+/**
+ * Represents a Provider model object with the ProviderDocumentInterface structure.
+ */
 export const Provider = model<ProviderDocumentInterface>('Provider', providerSchema);
