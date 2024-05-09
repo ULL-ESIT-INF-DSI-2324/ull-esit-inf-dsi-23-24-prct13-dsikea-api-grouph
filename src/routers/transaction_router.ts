@@ -95,7 +95,7 @@ transactionRouter.post('/transactions', async (req, res) => {
                 return res.status(400).send({ error: 'Insufficient stock for sale or invalid quantity for purchase' });
             }
 
-            furniture.stock += type === 'PURCHASE' ? item.quantity : -item.quantity;
+            furniture.stock += (type === 'PURCHASE' ? item.quantity : (-item.quantity));
             await furniture.save();
             totalPrice += furniture.price * item.quantity;
         }
@@ -215,7 +215,7 @@ transactionRouter.delete('/transactions/:id', async (req, res) => {
         }
 
         const newStockLevel = transaction.type === 'PURCHASE' ? furniture.stock - item.quantity : furniture.stock + item.quantity;
-  
+
         if (newStockLevel < 0) {
           return res.status(400).send({
             message: `Insufficient stock to reverse the transaction for furniture ID: ${item.furnitureId}. Available stock: ${furniture.stock}, trying to subtract: ${item.quantity}`

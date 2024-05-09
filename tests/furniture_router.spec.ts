@@ -4,7 +4,7 @@ import request from "supertest";
 import {app} from "../src/index.js";
 
 
-describe('Test de muebles',() =>{
+describe('Test de furniture Router',() =>{
     beforeEach(async()=>{
        await Furniture.deleteMany();
     })
