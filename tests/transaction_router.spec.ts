@@ -3,6 +3,7 @@ import { Transaction } from "../src/models/transaction.js";
 import { Customer } from "../src/models/customer.js";
 import { Furniture } from "../src/models/furniture.js";
 import { Provider } from "../src/models/provider.js";
+import { expect } from "chai";
 import request from "supertest";
 import {app} from "../src/index.js";
 
@@ -31,7 +32,7 @@ describe("Test de transaction Router", () => {
       "type": "Armario",
        "stock": 10        
       })
-      await request(app).post("/transactions").send({
+      const res=await request(app).post("/transactions").send({
         "customerNIF": "44444444W",
         "type": "SALE",
         "furnitureList": [
@@ -41,6 +42,11 @@ describe("Test de transaction Router", () => {
         }
         ] 
       }).expect(201)
+      expect(res.body.customerNIF).to.equal('44444444W');
+      expect(res.body.type).to.equal('SALE');
+      expect(res.body.furnitureList.length).to.equal(1);
+      expect(res.body.furnitureList[0].furnitureId).to.equal(String(Armario.body._id));
+      expect(res.body.furnitureList[0].quantity).to.equal(5);
      })
     it("should create a new transaction provider",async()=>{
         await request(app).post("/providers").send({
@@ -59,7 +65,7 @@ describe("Test de transaction Router", () => {
            "type": "Armario",
             "stock": 10        
            })
-           await request(app).post("/transactions").send({
+           const res=await request(app).post("/transactions").send({
              "providerCIF": "W44444444",
              "type": "PURCHASE",
              "furnitureList": [
@@ -68,7 +74,12 @@ describe("Test de transaction Router", () => {
                  "quantity": 5
              }
              ] 
-           }).expect(201)        
+           }).expect(201)     
+           expect(res.body.providerCIF).to.equal("W44444444");
+           expect(res.body.type).to.equal("PURCHASE");
+           expect(res.body.furnitureList.length).to.equal(1);
+           expect(res.body.furnitureList[0].furnitureId).to.equal(String(Armario.body._id));
+           expect(res.body.furnitureList[0].quantity).to.equal(5);   
     })
     it("should create a new transaction error 404 to customer", async () => {
         await request(app).post("/transactions").send({
@@ -218,7 +229,7 @@ describe("Test de transaction Router", () => {
             "type": "Armario",
              "stock": 10        
         })
-        await request(app).post("/transactions").send({
+        const res=await request(app).post("/transactions").send({
             "customerNIF": "54444444W",
             "type": "SALE",
             "furnitureList": [
@@ -231,6 +242,11 @@ describe("Test de transaction Router", () => {
         await request(app).get("/transactions?nif=54444444W").send({
 
         }).expect(200)
+        expect(res.body.customerNIF).to.equal("54444444W");
+        expect(res.body.type).to.equal("SALE");
+        expect(res.body.furnitureList.length).to.equal(1);
+        expect(res.body.furnitureList[0].furnitureId).to.equal(String(Armario.body._id));
+        expect(res.body.furnitureList[0].quantity).to.equal(5);  
        })
        it("should get a transaction provider", async () => {
         await request(app).post("/providers").send({
@@ -249,7 +265,7 @@ describe("Test de transaction Router", () => {
             "type": "Armario",
              "stock": 10        
         })
-        await request(app).post("/transactions").send({
+        const res=await request(app).post("/transactions").send({
             "providerCIF": "W14444444",
             "type": "PURCHASE",
             "furnitureList": [
@@ -262,6 +278,11 @@ describe("Test de transaction Router", () => {
         await request(app).get("/transactions?cif=W14444444").send({
 
         }).expect(200)
+        expect(res.body.providerCIF).to.equal("W14444444");
+        expect(res.body.type).to.equal("PURCHASE");
+        expect(res.body.furnitureList.length).to.equal(1);
+        expect(res.body.furnitureList[0].furnitureId).to.equal(String(Armario.body._id));
+        expect(res.body.furnitureList[0].quantity).to.equal(5); 
        })
        it("should get a transaction provider error", async () => {
         await request(app).post("/providers").send({
@@ -321,14 +342,25 @@ describe("Test de transaction Router", () => {
           }
           ] 
         })
-        await request(app).patch("/transactions/" + String(transaccion.body._id)).send({
+        const res=await request(app).patch("/transactions/" + String(transaccion.body._id)).send({
           "furnitureList": [
+            {
+              "furnitureId": String(Armario.body._id),
+               "quantity": 5
+            },
             {
                "furnitureId": String(Armario2.body._id),
                 "quantity": 4
             }
             ]           
          }).expect(200)
+         expect(res.body.customerNIF).to.equal("44444454W");
+         expect(res.body.type).to.equal("SALE");
+         expect(res.body.furnitureList.length).to.equal(2);
+         expect(res.body.furnitureList[0].furnitureId).to.equal(String(Armario.body._id));
+         expect(res.body.furnitureList[0].quantity).to.equal(5);
+         expect(res.body.furnitureList[1].furnitureId).to.be.equal(String(Armario2.body._id));
+         expect(res.body.furnitureList[1].quantity).to.equal(4);
      });
      it("should update a  transaction provider",async()=>{
       await request(app).post("/providers").send({
@@ -366,14 +398,25 @@ describe("Test de transaction Router", () => {
            }
            ] 
          })
-         await request(app).patch("/transactions/" + String(transaccion.body._id)).send({
+         const res=await request(app).patch("/transactions/" + String(transaccion.body._id)).send({
           "furnitureList": [
+            {
+              "furnitureId": String(Armario.body._id),
+               "quantity": 5
+            },
             {
                "furnitureId": String(Armario2.body._id),
                 "quantity": 4
             }
             ]           
          }).expect(200)   
+         expect(res.body.providerCIF).to.equal("W44444444");
+         expect(res.body.type).to.equal("PURCHASE");
+         expect(res.body.furnitureList.length).to.equal(2);
+         expect(res.body.furnitureList[0].furnitureId).to.equal(String(Armario.body._id));
+         expect(res.body.furnitureList[0].quantity).to.equal(5);
+         expect(res.body.furnitureList[1].furnitureId).to.equal(String(Armario2.body._id));
+         expect(res.body.furnitureList[1].quantity).to.equal(4);
          })    
          it("should error update a  transaction 500",async()=>{
             await request(app).patch("/transactions/4").send().expect(500)
@@ -444,11 +487,13 @@ describe("Test de transaction Router", () => {
          }
          ] 
        }) 
-       await request(app).delete("/transactions/" + String(transaccion.body._id)).expect(200)     
+       const res = await request(app).delete("/transactions/" + String(transaccion.body._id)).send().expect(200)    
+       expect(res.body.message).to.equal('Transaction deleted and stock adjusted successfully.' );
     })
     it('should error 500 delete a  transaction',async() =>{
-      await request(app).delete("/transactions/4").expect(500)
-    })
+      const res=await request(app).delete("/transactions/4").expect(500)
+      expect(res.body.message).to.equal('Error deleting transaction: Cast to ObjectId failed for value "4" (type string) at path "_id" for model "Transaction"' );
+    }) 
     it('should error 404 delete a  transaction',async() =>{
       await request(app).delete("/transactions/6637c5f5664d4a696e58f87e").expect(404)
     })

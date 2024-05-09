@@ -1,6 +1,7 @@
 import "mocha";
 import { Provider } from "../src/models/provider.js";
 import request from "supertest";
+import { expect } from "chai";
 import {app} from "../src/index.js";
 
 describe("Test de provider Router", () => {
@@ -8,13 +9,22 @@ describe("Test de provider Router", () => {
         await Provider.deleteMany({});
     });
     it("should create a new provider", async () => {
-      await request(app).post("/providers").send({
+      const res=await request(app).post("/providers").send({
       "name": "Rafa Nadal",
       "cif": "W22222222",
       "email": "rafa@gmail.com",
       "mobilePhone": 222222222,
       "address": "Calle Manacor"
       }).expect(201)
+      const expectavie={
+        "name": "Rafa Nadal",
+        "cif": "W22222222",
+        "email": "rafa@gmail.com",
+        "mobilePhone": 222222222,
+        "address": "Calle Manacor"
+        }
+    
+      expect(res.body).to.deep.include(expectavie) 
     })
     it("should create a new provider error", async () => {
         await request(app).post("/providers").send({
@@ -31,9 +41,18 @@ describe("Test de provider Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).patch("/providers?cif=W22222224").send({
+        const res=await request(app).patch("/providers?cif=W22222224").send({
             "name": "Rafa modificado"
         }).expect(200)
+        const expectavie={
+            "name": "Rafa modificado",
+            "cif": "W22222224",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+        
+        expect(res.body).to.deep.include(expectavie) 
     })
     it("should update a provider error query", async () => {
         await request(app).post("/providers").send({
@@ -65,9 +84,18 @@ describe("Test de provider Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             }).expect(201)
-        await request(app).patch("/providers/"+ String(response.body._id)).send({
+        const res=await request(app).patch("/providers/"+ String(response.body._id)).send({
             "name": "Rafa modificado"
         }).expect(200)
+        const expectavie={
+            "name": "Rafa modificado",
+            "cif": "W22222229",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+        
+        expect(res.body).to.deep.include(expectavie) 
     })
     it("should update id a provider error", async () => {
         await request(app).patch("/providers/1").send({
@@ -87,8 +115,17 @@ describe("Test de provider Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).get("/providers?cif=W22222230").send({
+        const res=await request(app).get("/providers?cif=W22222230").send({
         }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "cif": "W22222230",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+        
+        expect(res.body).to.deep.include(expectavie) 
     })   
     it("should get a error 404 provider", async () =>{
 
@@ -103,8 +140,17 @@ describe("Test de provider Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).get("/providers/" + String(response.body._id)).send({
+        const res=await request(app).get("/providers/" + String(response.body._id)).send({
         }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "cif": "W22222230",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+        
+        expect(res.body).to.deep.include(expectavie) 
     })
     it("should get a error 500 provider", async () =>{
 
@@ -124,8 +170,17 @@ describe("Test de provider Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).delete("/providers?cif=W22222240").send({
+        const res=await request(app).delete("/providers?cif=W22222240").send({
         }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "cif": "W22222240",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+        
+        expect(res.body).to.deep.include(expectavie) 
     })
     it("should delete a provider with query error", async () => {
         await request(app).delete("/providers").send({
@@ -143,8 +198,17 @@ describe("Test de provider Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).delete("/providers/" + String(response.body._id)).send({
+        const res=await request(app).delete("/providers/" + String(response.body._id)).send({
         }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "cif": "W22222210",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+        
+        expect(res.body).to.deep.include(expectavie) 
     })  
     it("should get a error 500 provider", async () =>{
 

@@ -1,6 +1,7 @@
 import "mocha";
 import { Furniture } from "../src/models/furniture.js";
 import request from "supertest";
+import { expect } from "chai";
 import {app} from "../src/index.js";
 
 
@@ -9,7 +10,7 @@ describe('Test de furniture Router',() =>{
        await Furniture.deleteMany();
     })
     it('debería añadir un nuevo mueble',async()=>{
-       await request(app).post('/furnitures').send({
+       const res= await request(app).post('/furnitures').send({
        "name": "Silla de Escritorio",
        "description": "Silla para estudiar por muchas horas",
        "material": "Plastico",
@@ -18,6 +19,16 @@ describe('Test de furniture Router',() =>{
        "type": "Silla",
        "stock": 10
        }).expect(201)
+       const expectavie={
+        "name": "Silla de Escritorio",
+        "description": "Silla para estudiar por muchas horas",
+        "material": "Plastico",
+        "color": "negro",
+        "price": 50,
+        "type": "Silla",
+        "stock": 10
+        }
+      expect(res.body).to.include(expectavie) 
     })
     it('debería dar error al añadir mueble',async()=>{
         await request(app).post('/furnitures').send({
@@ -51,9 +62,10 @@ describe('Test de furniture Router',() =>{
             "stock": 10
             })
                 
-        await request(app).patch('/furnitures?color=negro').send({
+        const res=await request(app).patch('/furnitures?color=negro').send({
           "color":"blanco"
         }).expect(200)
+          expect(res.body).to.deep.equal({ message: '1 furniture(s) updated' }) 
      })
      it('debería dar error por un mal parametros por modifcar el mueble',async()=>{
         await request(app).post('/furnitures').send({
@@ -99,9 +111,19 @@ describe('Test de furniture Router',() =>{
             "type": "Silla",
             "stock": 10
             })
-        await request(app).patch('/furnitures/' + String(response.body._id)).send({
+        const res=await request(app).patch('/furnitures/' + String(response.body._id)).send({
             "color":"blanco"
-        }).expect(200)      
+        }).expect(200)  
+        const expectavie={
+            "name": "Mesa test",
+            "description": "Mesa de test",
+            "material": "Plastico",
+            "color": "blanco",
+            "price": 50,
+            "type": "Silla",
+            "stock": 10
+            }
+          expect(res.body).to.include(expectavie)    
      })
      it('deberia dar error por atualizar un id  inexistente',async()=>{
 
@@ -125,8 +147,18 @@ describe('Test de furniture Router',() =>{
             "type": "Silla",
             "stock": 10
             })
-        await request(app).get('/furnitures/'+ String(response.body._id)).send({
+        const res=await request(app).get('/furnitures/'+ String(response.body._id)).send({
         }).expect(200)
+        const expectavie={
+            "name": "Mesa",
+            "description": "Mesa",
+            "material": "Plastico",
+            "color": "negro",
+            "price": 50,
+            "type": "Silla",
+            "stock": 10
+            }
+          expect(res.body).to.include(expectavie) 
      })
      it('deberia devolver error  el  muebles por 404',async()=>{
         await request(app).get('/furnitures/663ba1e428abaf1a19c71e15').send({
@@ -138,7 +170,7 @@ describe('Test de furniture Router',() =>{
      })
      it('deberia devolver un mueble por query',async()=>{
          await request(app).post('/furnitures').send({
-            "name": "Mesa3",
+            "name": "Mesa4",
             "description": "Mesa",
             "material": "Plastico",
             "color": "negro",
@@ -146,9 +178,22 @@ describe('Test de furniture Router',() =>{
             "type": "Mesa",
             "stock": 10
             }) 
-            await request(app).get('/furnitures?name=Mesa3').send({
+            const res=await request(app).get('/furnitures?name=Mesa4').send({
                 
-            }).expect(200)               
+            }).expect(200) 
+            const expectavie=[
+                {
+                  name: 'Mesa4',
+                  description: 'Mesa',
+                  material: 'Plastico',
+                  color: 'negro',
+                  price: 50,
+                  type: 'Mesa',
+                  stock: 10,
+                  __v: 0
+                }
+              ]
+              expect(res.body[0]).to.deep.include(expectavie[0])               
      })
      it('deberia devolver error por query por get',async()=>{
            await request(app).get('/furnitures?name=a').send({
@@ -166,8 +211,9 @@ describe('Test de furniture Router',() =>{
             "type": "Mesa",
             "stock": 10
             }) 
-        await request(app).delete('/furnitures?name=Mesa4').send({
-        }).expect(200)     
+        const res=await request(app).delete('/furnitures?name=Mesa4').send({
+        }).expect(200) 
+          expect(res.body).to.deep.equal({ message: '1 furniture(s) deleted' })   
     })
     it('debería dar error por borrar el mueble',async()=>{
         await request(app).delete('/furnitures').send({
@@ -183,8 +229,19 @@ describe('Test de furniture Router',() =>{
             "type": "Mesa",
             "stock": 10
             }) 
-        await request(app).delete('/furnitures/'+ String(response.body._id)).send({
-        }).expect(200)         
+        const res=await request(app).delete('/furnitures/'+ String(response.body._id)).send({
+        }).expect(200)  
+        const expectavie={
+              name: 'Mesa5',
+              description: 'Mesa',
+              material: 'Plastico',
+              color: 'negro',
+              price: 50,
+              type: 'Mesa',
+              stock: 10
+            }
+          
+          expect(res.body).to.deep.include(expectavie)      
     })
     it('debería dar error 500 borrar el mueble por id',async() =>{
         await request(app).delete('/furnitures/0').send({

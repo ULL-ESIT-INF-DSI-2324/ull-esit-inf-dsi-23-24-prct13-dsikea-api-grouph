@@ -1,5 +1,6 @@
 import "mocha";
 import { Customer } from "../src/models/customer.js";
+import { expect } from "chai";
 import request from "supertest";
 import {app} from "../src/index.js";
 
@@ -8,13 +9,21 @@ describe("Test de customer Router", () => {
         await Customer.deleteMany({});
     });
     it("should create a new customer", async () => {
-      await request(app).post("/customers").send({
+      const res=await request(app).post("/customers").send({
       "name": "Rafa Nadal",
       "nif": "22222222W",
       "email": "rafa@gmail.com",
       "mobilePhone": 222222222,
       "address": "Calle Manacor"
       }).expect(201)
+      const expectavie={
+        "name": "Rafa Nadal",
+        "nif": "22222222W",
+        "email": "rafa@gmail.com",
+        "mobilePhone": 222222222,
+        "address": "Calle Manacor"        
+      }
+      expect(res.body).to.include(expectavie)
     })
     it("should create a new customer error", async () => {
         await request(app).post("/customers").send({
@@ -31,9 +40,17 @@ describe("Test de customer Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).patch("/customers?nif=22222224A").send({
+        const res= await request(app).patch("/customers?nif=22222224A").send({
             "name": "Rafa modificado"
         }).expect(200)
+        const expectavie={
+            "name": "Rafa modificado",
+            "nif": "22222224A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"        
+          }
+          expect(res.body).to.include(expectavie)
     })
     it("should update a customer error query", async () => {
         await request(app).post("/customers").send({
@@ -65,9 +82,17 @@ describe("Test de customer Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             }).expect(201)
-        await request(app).patch("/customers/"+ String(response.body._id)).send({
+        const res=await request(app).patch("/customers/"+ String(response.body._id)).send({
             "name": "Rafa modificado"
         }).expect(200)
+        const expectavie={
+            "name": "Rafa modificado",
+            "nif": "22222229A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"        
+          }
+          expect(res.body).to.include(expectavie)        
     })
     it("should update id a customer error", async () => {
         await request(app).patch("/customers/1").send({
@@ -87,15 +112,23 @@ describe("Test de customer Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).get("/customers?nif=22222230A").send({
+        const res=await request(app).get("/customers?nif=22222230A").send({
         }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "nif": "22222230A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"        
+          }
+          expect(res.body).to.include(expectavie)          
     })   
     it("should get a error 404 customer", async () =>{
 
         await request(app).get("/customers?nif=4").send({
         }).expect(404)
     })
-    it("should get a customer", async () => {
+    it("should get a customers", async () => {
         const response=await request(app).post("/customers").send({
             "name": "Rafa Nadal",
             "nif": "22222230A",
@@ -124,8 +157,16 @@ describe("Test de customer Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).delete("/customers?nif=22222240A").send({
+        const res=await request(app).delete("/customers?nif=22222240A").send({
         }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "nif": "22222240A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+          expect(res.body).to.include(expectavie)  
     })
     it("should delete a customer with query error", async () => {
         await request(app).delete("/customers").send({
@@ -143,8 +184,16 @@ describe("Test de customer Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             })
-        await request(app).delete("/customers/" + String(response.body._id)).send({
+        const res = await request(app).delete("/customers/" + String(response.body._id)).send({
         }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "nif": "22222210A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+          expect(res.body).to.include(expectavie) 
     })  
     it("should get a error 500 customer", async () =>{
 
