@@ -11,8 +11,6 @@ import { defaultRouter } from './routers/default.js';
 // sudo /home/usuario/mongodb/bin/mongod --dbpath /home/usuario/mongodb-data/
 // node dist/index.js
 
-// mongodb+srv://dsikea-rest-api:ikeaDSI@dsikearestapicluster.pmd2rld.mongodb.net/test
-
 export const app = express();
 app.disable('x-powered-by');
 
