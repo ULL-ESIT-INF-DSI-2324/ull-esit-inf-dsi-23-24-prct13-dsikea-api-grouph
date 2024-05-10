@@ -983,4 +983,3 @@ Por último, nos gustaría agradecer al profesor por el esfuerzo puesto en la cr
 - [Mongoose](https://www.npmjs.com/package/mongoose)
 - [Render](https://render.com/)
 - [Apuntes de la asignatura](https://ull-esit-inf-dsi-2324.github.io/nodejs-theory/)
-
