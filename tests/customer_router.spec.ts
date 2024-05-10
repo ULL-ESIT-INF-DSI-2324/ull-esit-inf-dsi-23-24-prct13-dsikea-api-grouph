@@ -82,9 +82,12 @@ describe("Test de customer Router", () => {
             "mobilePhone": 222222222,
             "address": "Calle Manacor"
             }).expect(201)
-        const res=await request(app).patch("/customers/"+ String(response.body._id)).send({
+        
+        const customerId = response.body._id
+        const res = await request(app).patch(`/customers/${customerId}`).send({
             "name": "Rafa modificado"
         }).expect(200)
+        
         const expectavie={
             "name": "Rafa modificado",
             "nif": "22222229A",
