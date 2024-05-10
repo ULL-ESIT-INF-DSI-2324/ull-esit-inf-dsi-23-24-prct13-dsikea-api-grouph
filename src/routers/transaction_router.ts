@@ -169,6 +169,57 @@ transactionRouter.get('/transactions', async (req, res) => {
 });
 
 /**
+ * Route to retrieve all transactions within a date range.
+ * @param {express.Request} req - The request object, containing query parameters for the start and end date.
+ * @param {express.Response} res - The response object used to send back the transactions or an error message.
+ * @returns Sends the transactions that match the query parameters, or an error message with status 500 if an error occurs.
+ */
+transactionRouter.get('/transactions/by-date', async (req, res) => {
+    const { startDate, endDate, type } = req.query;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any> = {};
+
+    if (type) {
+        filter.type = type;
+    }
+    if(startDate && endDate) {
+        filter.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
+    } else if (startDate || endDate) {
+        return res.status(400).send({ error: 'Both start date and end date must be provided' });
+    }
+
+    try {
+        const transactions = await Transaction.find(filter);
+        if (transactions.length === 0) {
+            return res.status(404).send({ error: 'No transactions found' });
+        }
+        return res.status(200).send(transactions);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+
+/**
+ * Route to retrieve a transaction by ID.
+ * @param {express.Request} req - The request object, containing the ID in the params.
+ * @param {express.Response} res - The response object used to send back the transaction or an error message.
+ * @returns Sends the transaction, or an error message with status 404 if the transaction is not found and 500 if an error occurs.
+ */
+transactionRouter.get('/transactions/:id', async (req, res) => {
+    try {
+        const transaction = await Transaction.findById(req.params.id);
+        if (!transaction) {
+            return res.status(404).send({ 
+                error: 'Transaction not found' 
+            });
+        }
+        return res.send(transaction);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+
+/**
  * Route to retrieve a transaction by ID.
  * @param {express.Request} req - The request object, containing the ID in the params.
  * @param {express.Response} res - The response object used to send back the transaction or an error message.

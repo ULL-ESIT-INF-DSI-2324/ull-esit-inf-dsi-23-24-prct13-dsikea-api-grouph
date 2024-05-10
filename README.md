@@ -355,7 +355,617 @@ export const Transaction = model<TransactionDocumentInterface>('Transaction', tr
 
 - ### **[./src/routers]**
 
+En este directorio se encuentran definidos los *routers*, que son esenciales para dirigir las solicitudes entrantes a los controladores apropiados, dependiendo de la ruta y del tipo de solicitud HTTP que se realice. Los *routers* son los siguiente:
 
+- **default.ts**
+
+Este fichero contiene un *router* genérico que maneja todas las solicitudes a rutas no definidas en el resto de *routers* de la aplicación. Es fundamental para manejar errores de forma centralizada y proporcionar una respuesta coherente cuando se accede a una ruta no configurada en el sistema.
+
+```
+export const defaultRouter = express.Router();
+
+defaultRouter.all('*', (_, res) => {
+  res.status(501).send('Route not implemented');
+});
+```
+
+- **customer_router.ts** y **provider_router.ts**
+
+Las rutas para los clientes y los proveedores prácticamente iguales. Mientras que las rutas de clientes utilizan el NIF como identificador clave para realizar búsquedas, actualizaciones y eliminaciones, las rutas de proveedores utilizan el CIF, que es el equivalente para entidades comerciales o proveedores. Como los manejadores son prácticamente idénticos, en este apartado solo veremos los de los `customers`.
+
+- `POST /customers`: Permite crear un nuevo cliente en la base de datos. Recibe los datos del cliente en el cuerpo de la solicitud (name, NIF, email, mobilePhone, address) y crea una nueva instancia del modelo Customer con estos datos. Luego, guarda este objeto en la base de datos. Si el guardado tiene éxito, responde con un estado 201 junto con los datos del cliente creado, en caso contrario, devuelve un estado 500 con un mensaje de error.
+
+```
+customerRouter.post('/customers', async (req, res) => {
+    try {
+        const customer = new Customer(req.body);
+        await customer.save();
+        res.status(201).send(customer);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+```
+
+- `PATCH /customers`: Permite actualizar los datos de un cliente existente mediante el uso de su NIF, que se proporciona como un parámetro de consulta. Los campos a actualizar se envían en el cuerpo de la solicitud, y solo ciertos campos están permitidos para modificación (name, email, mobilePhone, address). Se busca el cliente utilizando **findOneAndUpdate** para actualizarlo con los nuevos datos. Si la operación tiene éxito, se devuelven los datos actualizados; si el NIF está ausente, se envía un error 400, y si no se encuentra el cliente, se devuelve un error 404. Un error 500 se emite si ocurre un fallo en la operación.
+
+```
+customerRouter.patch('/customers', async (req, res) => {
+    if(!req.query.nif) {
+        return res.status(400).send({
+            error: 'NIF is required'
+        });
+    }
+
+    const allowedUpdates = ['name', 'email', 'mobilePhone', 'address'];
+    const actualUpdates = Object.keys(req.body);
+    const isValidUpdate = actualUpdates.every((update) => allowedUpdates.includes(update));
+
+    if(!isValidUpdate) {
+        return res.status(400).send({
+            error: 'Update is not allowed'
+        });
+    }
+
+    try {
+        const customer = await Customer.findOneAndUpdate({ nif: req.query.nif }, req.body, { new: true, runValidators: true });
+        if(!customer) {
+            return res.status(404).send({ 
+                error: 'Customer not found' 
+            });
+        }
+        return res.send(customer);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- `PATCH /customers/:id`: Actualiza un cliente basado en su ID de MongoDB, pasado como parámetro de ruta. Similar a la ruta anterior, verifica que solo se actualicen los campos permitidos y luego utiliza **findByIdAndUpdate** para modificar el documento. Responde con los datos del cliente actualizado o con un error 400 si los campos son inválidos, 404 si no se encuentra al cliente, o 500 en caso de otros errores.
+
+```
+customerRouter.patch('/customers/:id', async (req, res) => {
+    const allowedUpdates = ['name', 'email', 'mobilePhone', 'address'];
+    const actualUpdates = Object.keys(req.body);
+    const isValidUpdate = actualUpdates.every((update) => allowedUpdates.includes(update));
+
+    if(!isValidUpdate) {
+        return res.status(400).send({
+            error: 'Update is not allowed'
+        });
+    }
+
+    try {
+        const customer = await Customer.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if(!customer) {
+            return res.status(404).send({ 
+                error: 'Customer not found' 
+            });
+        }
+        return res.send(customer);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- `GET /customers`: Recupera datos de un cliente utilizando su NIF como parámetro de consulta. Se utiliza **findOne** para buscar el cliente y devolver sus datos. Si falta el NIF en la solicitud, se responde con un error 400, mientras que un error 404 se devuelve si no se encuentra un cliente con el NIF dado. Los errores en la búsqueda se manejan con un estado 500.
+
+```
+customerRouter.get('/customers', async (req, res) => {
+    if(!req.query.nif) {
+        return res.status(400).send({
+            error: 'NIF is required'
+        });
+    }
+
+    try {
+        const customer = await Customer.findOne({ nif: req.query.nif });
+        if(!customer) {
+            return res.status(404).send({ 
+                error: 'Customer not found' 
+            });
+        }
+        return res.send(customer);
+    } catch (error) {
+        return res.status(500).send(error);
+    
+```
+
+- `GET /customers/:id`: Obtiene los datos de un cliente usando su ID de MongoDB. Utiliza **findById** para buscar al cliente, devolviendo sus datos en caso de éxito, o un error 404 si no se encuentra el cliente, y un error 500 en caso de problemas durante la operación.
+
+```
+customerRouter.get('/customers/:id', async (req, res) => {
+    try {
+        const customer = await Customer.findById(req.params.id);
+        if(!customer) {
+            return res.status(404).send({ 
+                error: 'Customer not found' 
+            });
+        }
+        return res.send(customer);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- `DELETE /customers` y `DELETER /customers/:id`: Permiten eliminar un cliente usando su NIF o ID de MongoDB respectivamente. En ambos casos, se busca el cliente usando **findOneAndDelete** o **findByIdAndDelete**. Si el cliente se encuentra y se elimina con éxito, se devuelve un estado 200 con los datos del cliente eliminado. Se devuelve un estado 400 si falta el NIF o el ID, un error 404 si no se encuentra el cliente, y un error 500 en caso de fallos durante la operación.
+
+```
+customerRouter.delete('/customers', async (req, res) => {
+    if(!req.query.nif) {
+        return res.status(400).send({
+            error: 'NIF is required'
+        });
+    }
+
+    try {
+        const customer = await Customer.findOneAndDelete({ nif: req.query.nif });
+        if(!customer) {
+            return res.status(404).send({ 
+                error: 'Customer not found' 
+            });
+        }
+        return res.send(customer);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+
+customerRouter.delete('/customers/:id', async (req, res) => {
+    try {
+        const customer = await Customer.findByIdAndDelete(req.params.id);
+        if(!customer) {
+            return res.status(404).send({ 
+                error: 'Customer not found' 
+            });
+        }
+        return res.send(customer);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- **furniture_router.ts**
+
+- `POST /furnitures`: Permite crear un nuevo mueble en la base de datos. Recibe los datos del mueble en el cuerpo de la solicitud (name, description, material, color, price, type, stock) y crea una nueva instancia del modelo Furniture con estos datos. Luego, guarda este objeto en la base de datos. Si el guardado tiene éxito, responde con un estado 201 junto con los datos del mueble creado, en caso contrario, devuelve un estado 500 con un mensaje de error.
+
+```
+furnitureRouter.post('/furnitures', async (req, res) => {
+    try {
+        const furniture = new Furniture(req.body);
+        await furniture.save();
+        res.status(201).send(furniture);
+    } catch (error) {
+        res.status(500).send(error);
+    }
+});
+```
+
+- `PATCH /furnitures`: Permite la actualización de múltiples muebles basándose en los filtros aplicados a través de los parámetros de consulta. La ruta valida que los campos actualizados estén dentro de los permitidos (name, description, material, color, price, type, stock) y, si se encuentran coincidencias, actualiza los artículos correspondientes. La respuesta incluirá un mensaje con el número de artículos actualizados o un estado 404 si ningún artículo coincide con los filtros, y un estado 500 si ocurre algún error en el proceso.
+
+```
+furnitureRouter.patch('/furnitures', async (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any>  = {};
+    ['name', 'description', 'material', 'color', 'price', 'type', 'stock'].forEach((field) => {
+        if(req.query[field]) {
+            filter[field] = req.query[field];
+        }
+    });
+
+    if (Object.keys(filter).length === 0) {
+        return res.status(400).send({ message: 'At least one query parameter is required for filtering' });
+    }
+
+    const updates = Object.keys(req.body);
+    const allowedUpdates = ['name', 'description', 'material', 'color', 'price', 'type', 'stock'];
+    const isValidUpdate = updates.every(update => allowedUpdates.includes(update));
+
+    if (!isValidUpdate) {
+        return res.status(400).send({ error: 'Invalid update' });
+    }
+
+    try {
+        const updated = await Furniture.updateMany(filter, req.body, { new: true, runValidators: true });
+        if (updated.modifiedCount === 0) {
+            return res.status(404).send({ error: 'Furniture not found' });
+        }
+        return res.status(200).send({
+            message: `${updated.modifiedCount} furniture(s) updated`
+        });
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- `PATCH /furnitures/:id`: Esta ruta actualiza un único mueble identificado por su ID de MongoDB. Acepta cambios en los mismos campos permitidos en la actualización general y utiliza el método **findByIdAndUpdate**. Si la actualización es exitosa, devuelve el mueble actualizado; si el mueble no se encuentra, retorna un estado 404; y si surge algún error durante la actualización, se emite un estado 500.
+
+```
+furnitureRouter.patch('/furnitures/:id', async (req, res) => {
+    const allowedUpdates = ['name', 'description', 'material', 'color', 'price', 'type', 'stock'];
+    const actualUpdates = Object.keys(req.body);
+    const isValidUpdate = actualUpdates.every((update) => allowedUpdates.includes(update));
+
+    if(!isValidUpdate) {
+        return res.status(400).send({
+            error: 'Update is not allowed'
+        });
+    }
+
+    try {
+        const furniture = await Furniture.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        if(!furniture) {
+            return res.status(404).send({ 
+                error: 'Furniture not found' 
+            });
+        }
+        return res.status(200).send(furniture);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- `GET /furnitures`: Recupera todos los muebles que coincidan con los filtros especificados en los parámetros de consulta. Si se encuentran muebles, los devuelve; si no hay coincidencias, devuelve un estado 404. Problemas durante la recuperación de los datos resultan en un estado 500.
+
+```
+furnitureRouter.get('/furnitures', async (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any>  = {};
+    ['name', 'description', 'material', 'color', 'price', 'type', 'stock'].forEach((field) => {
+        if(req.query[field]) {
+            filter[field] = req.query[field];
+        }
+    });
+
+    try {
+        const furnitures = await Furniture.find(filter);
+        if(furnitures.length === 0) {
+            return res.status(404).send({ 
+                error: 'Furniture not found' 
+            });
+        }
+        return res.send(furnitures);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- `GET /furnitures/:id`: Obtiene los detalles de un mueble específico mediante **findById**, utilizando su ID de MongoDB. Si el mueble se encuentra, se devuelven sus detalles; de lo contrario, se responde con un estado 404. Cualquier error en la recuperación del mueble provoca un estado 500.
+
+```
+furnitureRouter.get('/furnitures/:id', async (req, res) => {
+    try {
+        const furniture = await Furniture.findById(req.params.id);
+        if(!furniture) {
+            return res.status(404).send({ 
+                error: 'Furniture not found' 
+            });
+        }
+        return res.send(furniture);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- `DELETE /furnitures`: Permite eliminar muebles basándose en filtros especificados en los parámetros de consulta. Esta ruta verifica primero si los filtros están correctamente especificados y, si procede, elimina los muebles que coincidan mediante **deleteMany**. Devuelve un mensaje indicando la cantidad de muebles eliminados o un estado 404 si no se encuentra ningún mueble. Un error durante el proceso resulta en un estado 500.
+
+```
+furnitureRouter.delete('/furnitures', async (req, res) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any>  = {};
+    ['name', 'description', 'material', 'color', 'price', 'type', 'stock'].forEach((field) => {
+        if(req.query[field]) {
+            filter[field] = req.query[field];
+        }
+    });
+
+    if (Object.keys(filter).length === 0) {
+        return res.status(400).send({ message: 'At least one query parameter is required for filtering' });
+    }
+
+    try {
+        const deleted = await Furniture.deleteMany(filter);
+        if(deleted.deletedCount === 0) {
+            return res.status(404).send({ 
+                error: 'Furniture not found' 
+            });
+        }
+        return res.send({
+            message: `${deleted.deletedCount} furniture(s) deleted`
+        }).status(200);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- `DELETE /furnitures/:id`: Elimina un mueble específico identificado por su ID de MongoDB a través de **findByIdAndDelte**. Si la eliminación es exitosa, devuelve los detalles del mueble eliminado; si no se encuentra el mueble, retorna un estado 404; y si ocurre un error durante la eliminación, se reporta con un estado 500.
+
+```
+furnitureRouter.delete('/furnitures/:id', async (req, res) => {
+    try {
+        const furniture = await Furniture.findByIdAndDelete(req.params.id);
+        if(!furniture) {
+            return res.status(404).send({ 
+                error: 'Furniture not found' 
+            });
+        }
+        return res.send(furniture);
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+});
+```
+
+- **transaction_router.ts**
+
+En primer lugar, tenemos las funciones `findCustomer` y `findProvider`, las cuales se encargan de verificar la existencia y la validez de clientes y proveedores dentro de la aplicación:
+
+```
+async function findCustomer(nif: string): Promise<CustomerDocumentInterface | null> {
+    return Customer.findOne({ nif: nif }).exec();
+}
+
+async function findProvider(cif: string): Promise<ProviderDocumentInterface | null> {
+    return Provider.findOne({ cif: cif }).exec();
+}
+```
+
+A continuación, los diferentes manejadores:
+
+- `POST /transactions`: Esta ruta crea nuevas transacciones, ya sean de tipo "SALE" o "PURCHASE". Para iniciar una transacción, se requiere un **type** válido, una **furnitureList** con sus respectivos muebles y cantidades y, dependiendo del tipo de transacción, un NIF de cliente o un CIF de proveedor. La ruta primero verifica la validez del tipo de transacción y la presencia de la lista de muebles. Posteriormente, dependiendo del tipo, busca al cliente o al proveedor utilizando las funciones **findCustomer** o **findProvider**. Tras verificar la existencia y disponibilidad de los muebles, ajusta el inventario y calcula el precio total. Si todos los pasos se completan exitosamente, la transacción se guarda y se devuelve al cliente; si ocurre un error en cualquiera de estos pasos, se maneja adecuadamente, devolviendo mensajes de error específicos.
+
+```
+transactionRouter.post('/transactions', async (req, res) => {
+    const { type, customerNIF, providerCIF, furnitureList } = req.body;
+
+    if (type !== 'SALE' && type !== 'PURCHASE') {
+        return res.status(400).send({ error: 'Invalid transaction type' });
+    }
+    if (!furnitureList || furnitureList.length === 0) {
+        return res.status(400).send({ error: 'Furniture list must be provided' });
+    }
+
+    try {
+        let party = null;
+        if (type === 'SALE') {
+            if (!customerNIF) {
+                return res.status(400).send({ error: 'Customer NIF is required for SALE transactions' });
+            }
+            party = await findCustomer(customerNIF);
+            if (!party) {
+                return res.status(404).send({ error: 'Customer not found' });
+            }
+        } else if (type === 'PURCHASE') {
+            if (!providerCIF) {
+                return res.status(400).send({ error: 'Provider CIF is required for PURCHASE transactions' });
+            }
+            party = await findProvider(providerCIF);
+            if (!party) {
+                return res.status(404).send({ error: 'Supplier not found' });
+            }
+        }
+
+        let totalPrice = 0;
+        for (const item of furnitureList) {
+            const furniture = await Furniture.findById(item.furnitureId);
+            if (!furniture) {
+                return res.status(404).send({ error: 'Furniture not found' });
+            }
+
+            if ((type === 'SALE' && furniture.stock < item.quantity) || 
+                (type === 'PURCHASE' && item.quantity < 0)) {
+                return res.status(400).send({ error: 'Insufficient stock for sale or invalid quantity for purchase' });
+            }
+
+            furniture.stock += (type === 'PURCHASE' ? item.quantity : (-item.quantity));
+            await furniture.save();
+            totalPrice += furniture.price * item.quantity;
+        }
+
+        const transaction = new Transaction({
+            customerNIF: type === 'SALE' ? customerNIF : undefined,
+            providerCIF: type === 'PURCHASE' ? providerCIF : undefined,
+            type,
+            furnitureList,
+            totalPrice,
+            date: new Date()
+        });
+
+        await transaction.save();
+        return res.status(201).send(transaction);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+```
+
+- `GET /transactions`: Esta ruta recupera transacciones basándose en filtros específicos como el NIF del cliente o el CIF del proveedor. Verifica la existencia de estos identificadores y, de ser correctos, procede a filtrar y devolver todas las transacciones que coincidan. Si no se encuentran transacciones que cumplan con los criterios establecidos, se devuelve un mensaje de error.
+
+```
+transactionRouter.get('/transactions', async (req, res) => {
+    const { customerNIF, providerCIF } = req.query;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any> = {};
+    try {
+        if (customerNIF) {
+            const customerExists = await Customer.exists({ nif: customerNIF });
+            if (!customerExists) {
+                return res.status(404).send({ message: `No customer found with NIF: ${customerNIF}` });
+            }
+        }
+
+        if (providerCIF) {
+            const providerExists = await Provider.exists({ cif: providerCIF });
+            if (!providerExists) {
+                return res.status(404).send({ message: `No provider found with CIF: ${providerCIF}` });
+            }
+        }
+
+        if (customerNIF) {
+            filter.customerNIF = customerNIF;
+        }
+        if (providerCIF) {
+            filter.providerCIF = providerCIF;
+        }
+
+        const transactions = await Transaction.find(filter);
+        if (transactions.length === 0) {
+            return res.status(404).send({ message: 'No transactions found for the provided identifiers.' });
+        }
+        return res.status(200).send(transactions);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+```
+
+- `GET /transactions/by-date`: Similar a la ruta anterior, esta variante permite filtrar transacciones dentro de un rango de fechas específico, además de por tipo de transacción. Valida la presencia de ambas fechas y el tipo, luego busca y devuelve todas las transacciones que cumplan con estos parámetros. 
+
+```
+transactionRouter.get('/transactions/by-date', async (req, res) => {
+    const { startDate, endDate, type } = req.query;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any> = {};
+
+    if (type) {
+        filter.type = type;
+    }
+    if(startDate && endDate) {
+        filter.date = { $gte: new Date(startDate as string), $lte: new Date(endDate as string) };
+    } else if (startDate || endDate) {
+        return res.status(400).send({ error: 'Both start date and end date must be provided' });
+    }
+
+    try {
+        const transactions = await Transaction.find(filter);
+        if (transactions.length === 0) {
+            return res.status(404).send({ error: 'No transactions found' });
+        }
+        return res.status(200).send(transactions);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+```
+
+- `GET /transactions/:id`: Obtiene los datos de una transacción usando su ID de MongoDB. Utiliza **findById** para buscar la transacción, devolviendo sus datos en caso de éxito, o un error 404 si no se encuentra la transacción, y un error 500 en caso de problemas durante la operación.
+
+```
+transactionRouter.get('/transactions/:id', async (req, res) => {
+    try {
+        const transaction = await Transaction.findById(req.params.id);
+        if (!transaction) {
+            return res.status(404).send({ 
+                error: 'Transaction not found' 
+            });
+        }
+        return res.send(transaction);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+```
+
+- `PATCH /transactions/:id`: Permite la actualización de una transacción específica mediante su ID de MongoDB. Primero, se verifica si la transacción existe utilizando el ID proporcionado. Si no se encuentra, se responde con un estado HTTP 404. Luego se examina la lista de muebles actualizada proporcionada en el cuerpo de la solicitud y se asegura que los muebles existan y que las cantidades sean adecuadas para el tipo de transacción (venta o compra). Para cada mueble implicado, se ajusta el stock. Para ventas, el stock se reduce; para compras, se incrementa.
+
+El precio total de la transacción se recalcula basándose en los precios actuales de los muebles y las nuevas cantidades. Por último, los detalles de la transacción actualizados, incluyendo la lista de muebles y el precio total, se guardan nuevamente en la base de datos. Si todo el proceso es exitoso, se envía la transacción actualizada al cliente. En caso de errores durante la actualización, como problemas de validación o errores en el acceso a la base de datos, se manejan mediante códigos de estado apropiados y mensajes de error claros.
+
+```
+transactionRouter.patch('/transactions/:id', async (req, res) => {
+    const { id } = req.params;
+    const { furnitureList } = req.body;
+
+    try {
+        const transaction = await Transaction.findById(id);
+        if (!transaction) {
+            return res.status(404).send('Transaction not found.');
+        }
+
+        let newTotalPrice = 0;
+
+        if (transaction.furnitureList && transaction.furnitureList.length > 0) {
+            await Promise.all(transaction.furnitureList.map(async (item) => {
+                const furniture = await Furniture.findById(item.furnitureId);
+                if (furniture) {
+                    const stockAdjustment = transaction.type === 'PURCHASE' ? -item.quantity : item.quantity;
+                    furniture.stock += stockAdjustment;
+                    await furniture.save();
+                }
+            }));
+        }
+
+        if (furnitureList && furnitureList.length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await Promise.all(furnitureList.map(async (newItem: { furnitureId: any; quantity: number; }) => {
+                const furniture = await Furniture.findById(newItem.furnitureId);
+                if (furniture) {
+                    const stockAdjustment = transaction.type === 'PURCHASE' ? newItem.quantity : -newItem.quantity;
+                    furniture.stock += stockAdjustment;
+                    await furniture.save();
+                    newTotalPrice += newItem.quantity * furniture.price;
+                } else {
+                    throw new Error(`Furniture not found for ID: ${newItem.furnitureId}`);
+                }
+            }));
+        }
+
+        transaction.furnitureList = furnitureList;
+        transaction.totalPrice = newTotalPrice; 
+        await transaction.save();
+
+        return res.send(transaction);
+    } catch (error) {
+        return res.status(500).send({ message: error.message });
+    }
+});
+```
+
+- `DELETE /transactions/:id`: Inicialmente, se intenta encontrar la transacción específica utilizando el ID proporcionado en la solicitud (req.params.id) mediante el método **findById**. Una vez encontrada la transacción, el sistema revisa cada artículo listado en transaction.furnitureList. Para cada artículo, busca el mueble correspondiente en la base de datos utilizando su ID. Si algún mueble no se encuentra, devuelve un error 404 indicando que el mueble específico no fue encontrado, en cambio, si el mueble existe, calcula el nuevo nivel de stock que resultaría después de revertir la transacción. Si la transacción fue una compra, se reduce el stock, si fue una venta, se incrementa.
+Si el ajuste de stock resulta en un número negativo, lo que indicaría una cantidad inexistente, se devuelve un error 400 indicando insuficiencia de stock para revertir la transacción.
+
+Después de ajustar el inventario de todos los artículos involucrados sin problemas, la transacción se elimina de la base de datos utilizando **findByIdAndDelete**. Si todos los pasos anteriores se completan con éxito, se envía una respuesta con estado 200, indicando que la transacción fue eliminada correctamente y que el stock fue ajustado adecuadamente, en caso contrario, se captura este error y se devuelve un estado 500 con un mensaje explicativo.
+
+```
+transactionRouter.delete('/transactions/:id', async (req, res) => {
+    try {
+      const transaction = await Transaction.findById(req.params.id);
+      if (!transaction) {
+        return res.status(404).send('Transaction not found');
+      }
+  
+      for (const item of transaction.furnitureList) {
+        const furniture = await Furniture.findById(item.furnitureId);
+        if (!furniture) {
+          return res.status(404).send({ message: 'Furniture not found for ID: ' + item.furnitureId });
+        }
+
+        const newStockLevel = transaction.type === 'PURCHASE' ? furniture.stock - item.quantity : furniture.stock + item.quantity;
+
+        if (newStockLevel < 0) {
+          return res.status(400).send({
+            message: `Insufficient stock to reverse the transaction for furniture ID: ${item.furnitureId}. Available stock: ${furniture.stock}, trying to subtract: ${item.quantity}`
+          });
+        }
+  
+        furniture.stock = newStockLevel;
+        await furniture.save();
+      }
+
+      await Transaction.findByIdAndDelete(req.params.id);
+      return res.status(200).send({ message: 'Transaction deleted and stock adjusted successfully.' });
+    } catch (error) {
+        return res.status(500).send({ message: 'Error deleting transaction: ' + error.message });
+    }
+});
+```
 
 ## Conclusiones
 
