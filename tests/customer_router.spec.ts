@@ -107,41 +107,42 @@ describe("Test de customer Router", () => {
             "name": "Rafa modificado"
         }).expect(404)
     })
-    // it("should get a customer", async () => {
-    //     await request(app).post("/customers").send({
-    //         "name": "Rafa Nadal",
-    //         "nif": "22222230A",
-    //         "email": "rafa@gmail.com",
-    //         "mobilePhone": 222222222,
-    //         "address": "Calle Manacor"
-    //         })
-    //     const res=await request(app).get("/customers?nif=22222230A").send({
-    //     }).expect(200)
-    //     const expectavie={
-    //         "name": "Rafa Nadal",
-    //         "nif": "22222230A",
-    //         "email": "rafa@gmail.com",
-    //         "mobilePhone": 222222222,
-    //         "address": "Calle Manacor"        
-    //       }
-    //       expect(res.body).to.include(expectavie)          
-    // })   
+    it("should get a customer", async () => {
+        await request(app).post("/customers").send({
+            "name": "Rafa Nadal",
+            "nif": "22222230A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            })
+        const res=await request(app).get("/customers?nif=22222230A").send({
+        }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "nif": "22222230A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"        
+          }
+          expect(res.body).to.include(expectavie)          
+    })   
     it("should get a error 404 customer", async () =>{
+
         await request(app).get("/customers?nif=4").send({
         }).expect(404)
     })
-    // it("should get a customers", async () => {
-    //     const response=await request(app).post("/customers").send({
-    //         "name": "Rafa Nadal",
-    //         "nif": "22222230A",
-    //         "email": "rafa@gmail.com",
-    //         "mobilePhone": 222222222,
-    //         "address": "Calle Manacor"
-    //         })
-    //     const customerId = response.body._id;
-    //     await request(app).get(`/customers/${customerId}`).send({
-    //     }).expect(200)
-    // })
+    it("should get a customers", async () => {
+        const response=await request(app).post("/customers").send({
+            "name": "Rafa Nadal",
+            "nif": "22222230A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            })
+        const customerId = response.body._id;
+        await request(app).get(`/customers/${customerId}`).send({
+        }).expect(200)
+    })
     it("should get a error 500 customer", async () =>{
 
         await request(app).get("/customers/4").send({
@@ -152,24 +153,24 @@ describe("Test de customer Router", () => {
         await request(app).get("/customers/663ba1e428abaf1a19c71e15").send({
         }).expect(404)
     })
-    // it("should delete a customer with query", async () => {
-    //     await request(app).post("/customers").send({
-    //         "name": "Rafa Nadal",
-    //         "nif": "22222240A",
-    //         "email": "rafa@gmail.com",
-    //         "mobilePhone": 222222222,
-    //         "address": "Calle Manacor"
-    //         })
-    //     const res = await request(app).delete("/customers?nif=22222240A").expect(200);
-    //     // const expectavie={
-    //     //     "name": "Rafa Nadal",
-    //     //     "nif": "22222240A",
-    //     //     "email": "rafa@gmail.com",
-    //     //     "mobilePhone": 222222222,
-    //     //     "address": "Calle Manacor"
-    //     // };
-    //     //   expect(res.body).to.include(expectavie)  
-    // })
+    it("should delete a customer with query", async () => {
+        await request(app).post("/customers").send({
+            "name": "Rafa Nadal",
+            "nif": "22222240A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            })
+        const res = await request(app).delete("/customers?nif=22222240A").expect(200);
+         const expectavie={
+             "name": "Rafa Nadal",
+             "nif": "22222240A",
+             "email": "rafa@gmail.com",
+             "mobilePhone": 222222222,
+             "address": "Calle Manacor"
+         };
+         expect(res.body).to.include(expectavie)  
+    })
     it("should delete a customer with query error", async () => {
         await request(app).delete("/customers").send({
         }).expect(400)
@@ -178,32 +179,34 @@ describe("Test de customer Router", () => {
         await request(app).delete("/customers?nif=4").send({
         }).expect(404)
     })
-    // it("should get a customer", async () => {
-    //     const response=await request(app).post("/customers").send({
-    //         "name": "Rafa Nadal",
-    //         "nif": "22222210A",
-    //         "email": "rafa@gmail.com",
-    //         "mobilePhone": 222222222,
-    //         "address": "Calle Manacor"
-    //         })
+    it("should get a customer", async () => {
+        const response=await request(app).post("/customers").send({
+            "name": "Rafa Nadal",
+            "nif": "22222210A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            })
         
-    //     const customerId = response.body._id
-    //     const res = await request(app).delete(`/customers/${customerId}`).send({
-    //     }).expect(200)
-    //     const expectavie={
-    //         "name": "Rafa Nadal",
-    //         "nif": "22222210A",
-    //         "email": "rafa@gmail.com",
-    //         "mobilePhone": 222222222,
-    //         "address": "Calle Manacor"
-    //         }
-    //     expect(res.body).to.include(expectavie) 
-    // })  
+        const customerId = response.body._id
+        const res = await request(app).delete(`/customers/${customerId}`).send({
+        }).expect(200)
+        const expectavie={
+            "name": "Rafa Nadal",
+            "nif": "22222210A",
+            "email": "rafa@gmail.com",
+            "mobilePhone": 222222222,
+            "address": "Calle Manacor"
+            }
+          expect(res.body).to.include(expectavie) 
+    })  
     it("should get a error 500 customer", async () =>{
+
         await request(app).delete("/customers/4").send({
         }).expect(500)
     })
     it("should get a error 404 customer", async () =>{
+
         await request(app).delete("/customers/663ba1e428abaf1a19c71e15").send({
         }).expect(404)
     })
