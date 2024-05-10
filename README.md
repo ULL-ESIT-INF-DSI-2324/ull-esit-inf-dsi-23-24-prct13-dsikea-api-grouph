@@ -54,7 +54,7 @@ En este apartado llevaremos a cabo la explicación del código desarrollado. Sin
 
 A continuación, procederemos con todo el código desarrollado dentro de los directorios contenidos en `./src`.
 
-- ### **[./src/db]**
+### **[./src/db]**
  Dentro de este directorio, nos encontramos con el fichero `mongoose.ts`, el cual contiene el código necesario para establecer la conexión con el servidor de MongoDB. 
  
  ```
@@ -90,7 +90,7 @@ app.listen(port, () => {
 
 El servidor se configura para escuchar en un puerto definido por una variable de entorno **PORT**, o el puerto 3000 como predeterminado. Al iniciar el servidor, se imprime un mensaje en la consola indicando que el servidor está operativo y escuchando peticiones en el puerto especificado.
 
-- ### **[./src/models]**
+### **[./src/models]**
 
 En este directorio encontraremos las diferentes interfaces y modelos utilizados en la aplicación, cada uno correspondiente a las entidades de la base de datos como clientes, proveedores, muebles y transacciones. Cada modelo está definido utilizando Mongoose, lo que facilita la integración con MongoDB al proporcionar una estructura de datos clara.
 
@@ -353,7 +353,7 @@ const transactionSchema = new Schema<TransactionDocumentInterface>({
 export const Transaction = model<TransactionDocumentInterface>('Transaction', transactionSchema);
 ```
 
-- ### **[./src/routers]**
+### **[./src/routers]**
 
 En este directorio se encuentran definidos los *routers*, que son esenciales para dirigir las solicitudes entrantes a los controladores apropiados, dependiendo de la ruta y del tipo de solicitud HTTP que se realice. Los *routers* son los siguiente:
 
@@ -875,8 +875,8 @@ transactionRouter.get('/transactions/:id', async (req, res) => {
 ```
 
 - `PATCH /transactions/:id`: Permite la actualización de una transacción específica mediante su ID de MongoDB. Primero, se verifica si la transacción existe utilizando el ID proporcionado. Si no se encuentra, se responde con un estado HTTP 404. Luego se examina la lista de muebles actualizada proporcionada en el cuerpo de la solicitud y se asegura que los muebles existan y que las cantidades sean adecuadas para el tipo de transacción (venta o compra). Para cada mueble implicado, se ajusta el stock. Para ventas, el stock se reduce; para compras, se incrementa.
-
-El precio total de la transacción se recalcula basándose en los precios actuales de los muebles y las nuevas cantidades. Por último, los detalles de la transacción actualizados, incluyendo la lista de muebles y el precio total, se guardan nuevamente en la base de datos. Si todo el proceso es exitoso, se envía la transacción actualizada al cliente. En caso de errores durante la actualización, como problemas de validación o errores en el acceso a la base de datos, se manejan mediante códigos de estado apropiados y mensajes de error claros.
+El precio total de la transacción se recalcula basándose en los precios actuales de los muebles y las nuevas cantidades. 
+Por último, los detalles de la transacción actualizados, incluyendo la lista de muebles y el precio total, se guardan nuevamente en la base de datos. Si todo el proceso es exitoso, se envía la transacción actualizada al cliente. En caso de errores durante la actualización, como problemas de validación o errores en el acceso a la base de datos, se manejan mediante códigos de estado apropiados y mensajes de error claros.
 
 ```
 transactionRouter.patch('/transactions/:id', async (req, res) => {
@@ -930,7 +930,6 @@ transactionRouter.patch('/transactions/:id', async (req, res) => {
 
 - `DELETE /transactions/:id`: Inicialmente, se intenta encontrar la transacción específica utilizando el ID proporcionado en la solicitud (req.params.id) mediante el método **findById**. Una vez encontrada la transacción, el sistema revisa cada artículo listado en transaction.furnitureList. Para cada artículo, busca el mueble correspondiente en la base de datos utilizando su ID. Si algún mueble no se encuentra, devuelve un error 404 indicando que el mueble específico no fue encontrado, en cambio, si el mueble existe, calcula el nuevo nivel de stock que resultaría después de revertir la transacción. Si la transacción fue una compra, se reduce el stock, si fue una venta, se incrementa.
 Si el ajuste de stock resulta en un número negativo, lo que indicaría una cantidad inexistente, se devuelve un error 400 indicando insuficiencia de stock para revertir la transacción.
-
 Después de ajustar el inventario de todos los artículos involucrados sin problemas, la transacción se elimina de la base de datos utilizando **findByIdAndDelete**. Si todos los pasos anteriores se completan con éxito, se envía una respuesta con estado 200, indicando que la transacción fue eliminada correctamente y que el stock fue ajustado adecuadamente, en caso contrario, se captura este error y se devuelve un estado 500 con un mensaje explicativo.
 
 ```
