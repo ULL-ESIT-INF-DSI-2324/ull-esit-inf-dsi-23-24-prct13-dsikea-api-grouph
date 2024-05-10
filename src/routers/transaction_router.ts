@@ -187,7 +187,6 @@ transactionRouter.get('/transactions/by-date', async (req, res) => {
     } else if (startDate || endDate) {
         return res.status(400).send({ error: 'Both start date and end date must be provided' });
     }
-
     try {
         const transactions = await Transaction.find(filter);
         if (transactions.length === 0) {
