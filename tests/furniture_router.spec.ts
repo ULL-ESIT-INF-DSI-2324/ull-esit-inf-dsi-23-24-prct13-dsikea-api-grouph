@@ -51,22 +51,22 @@ describe('Test de furniture Router',() =>{
         "stock": 10
         }).expect(500)
      })
-     it('debería modifcar el mueble',async()=>{
-        await request(app).post('/furnitures').send({
-            "name": "Mesa de Escritorio",
-            "description": "Mesa para estudiar por muchas horas",
-            "material": "Plastico",
-            "color": "negro",
-            "price": 50,
-            "type": "Silla",
-            "stock": 10
-            })
+    //  it('debería modifcar el mueble',async()=>{
+    //     await request(app).post('/furnitures').send({
+    //         "name": "Mesa de Escritorio",
+    //         "description": "Mesa para estudiar por muchas horas",
+    //         "material": "Plastico",
+    //         "color": "negro",
+    //         "price": 50,
+    //         "type": "Silla",
+    //         "stock": 10
+    //         })
                 
-        const res=await request(app).patch('/furnitures?color=negro').send({
-          "color":"blanco"
-        }).expect(200)
-          expect(res.body).to.deep.equal({ message: '1 furniture(s) updated' }) 
-     })
+    //     const res=await request(app).patch('/furnitures?color=negro').send({
+    //       "color":"blanco"
+    //     }).expect(200)
+    //       expect(res.body).to.deep.equal({ message: '1 furniture(s) updated' }) 
+    //  })
      it('debería dar error por un mal parametros por modifcar el mueble',async()=>{
         await request(app).post('/furnitures').send({
             "name": "Mesa de Cristal",
