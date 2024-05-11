@@ -43,13 +43,13 @@ En este apartado llevaremos a cabo la explicación del código desarrollado. Sin
  - **dev.env**
  ```
  PORT=3000
- MONGODB_URL=mongodb://127.0.0.1:27017/dsikea-api
+ MONGODB_URL=mongodb:mongodb+srv://dsikea-rest-api:ikeaDSI@dsikearestapicluster.pmd2rld.mongodb.net/ikea-api
  ```
 
  - **test.env**
  ```
  PORT=3000
- MONGODB_URL=mongodb://127.0.0.1:27017/dsikea-api-test
+ MONGODB_URL=mongodb://127.0.0.1:27017/dsikea-api
  ```
 
 A continuación, procederemos con todo el código desarrollado dentro de los directorios contenidos en `./src`.
@@ -970,7 +970,7 @@ transactionRouter.delete('/transactions/:id', async (req, res) => {
 
 El desarrollo de este proyecto nos ha servido para poner en práctica los conocimientos adquiridos hasta ahora en la asignatura, mayoritariamente los de la segunda parte. Hemos aprendido a usar diferentes herramientas como el Framework Express, para implementar la API REST, así como MongoDB y Mongoose para trabajar con la base de datos y modelarlos de forma sencilla. También, a través de los servicios MongoDB Atlas y Render, hemos conseguido llevar a cabo el despliegue de nuestra primera apliación, adquiriendo así algo de experiencia en la gestión y puesta en marcha de aplicaciones en entornos de producción "real".
 
-La mayor dificultad de la práctica fue sin duda utilizar **MongoDB Atlas**, pues no podíamos conectarnos a la base de datos desde la extensión de MongoDB en VSCode. Supusimos que podía ser un problema o bien con las IPs, o bien con la VPN para conectarnos a la máquna virtual. Sin embargo, lo primero no podía ser, pues habíamos habilitado la IP **0.0.0.0/0**, así que supusimos que era lo segundo.
+La mayor dificultad de la práctica fue sin duda utilizar **MongoDB Atlas**, pues no podíamos conectarnos a la base de datos desde la extensión de MongoDB en VSCode. Supusimos que podía ser un problema o bien con las IPs, o bien con la VPN para conectarnos a la máquina virtual. Sin embargo, lo primero no podía ser, pues habíamos habilitado la IP **0.0.0.0/0**, así que supusimos que era lo segundo.
 Para arreglarlo, simplemente desactivamos la VPN, clonamos el repositorio en local y una vez ahí, ya nos dejaba conectarnos a la base de datos y correr la aplicación sin problemas.
 
 Por último, nos gustaría agradecer al profesor por el esfuerzo puesto en la creación de los apuntes, pues la claridad y el detalle con que están redactados, facilitaron significativamente nuestro aprendizaje.
