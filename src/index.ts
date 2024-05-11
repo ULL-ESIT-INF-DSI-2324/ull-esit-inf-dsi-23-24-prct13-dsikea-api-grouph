@@ -9,7 +9,7 @@ import { defaultRouter } from './routers/default.js';
 // Ejecutar la app con:
 
 // sudo /home/usuario/mongodb/bin/mongod --dbpath /home/usuario/mongodb-data/
-// node dist/index.js
+// npm run dev
 
 export const app = express();
 app.disable('x-powered-by');
